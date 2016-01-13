@@ -1,0 +1,22 @@
+{
+  "name": "learn-gulp",
+  "description": "learning gulp step by step",
+  "main": "public/index.php",
+  "authors": [
+    "Strever"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "gulp",
+    "npm"
+  ],
+  "homepage": "www.strever.cn",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
