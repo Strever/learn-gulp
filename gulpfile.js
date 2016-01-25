@@ -11,24 +11,27 @@ var del = require('del');
 var cache = require('gulp-cache');
 var imagemin = require('gulp-imagemin');
 var livereload = require('gulp-livereload');
-var version = require('gulp-version');
+var rev = require('gulp-rev');
 
 var notify = require('gulp-notify');
 
 
 var paths = {
     cssVendor:['./resources/css/vendor/*.css'],
-    jsVendor:['./resources/js/vendor/jquery*.js'],
+    jsVendor:['./resources/js/vendor/*.js'],
     css:['./resources/css/*.css', '!./resources/css/vendor/**/*.css'],
     js:['./resources/js/*.js', '!.resources/js/vendor/**/*.js'],
     images:['resources/images/**/*.*'],
-    watch:['./resources/css/*.css', './resources/js/*.js','resources/images/**/*.*']
+    watch:['./resources/css/**/*.css', './resources/js/**/*.js','resources/images/**/*.*']
 };
 
+
+//release
 gulp.task('default', ['clean'], function() {
     gulp.start('compress');
 });
 
+//dev
 gulp.task('watch', function() {
 
     livereload.listen();
@@ -36,9 +39,27 @@ gulp.task('watch', function() {
     gulp.watch(paths.watch, function(event) {
         console.log('Event type: ' + event.type); // added, changed, or deleted
         console.log('Event path: ' + event.path); // The path of the modified file
-        gulp.start('default');
+        gulp.start('dev');
     })
     .on('change', livereload.changed);
+});
+
+gulp.task('dev', ['clean'], function() {
+    gulp.src(paths.js)
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'))
+    .pipe(concat('app.js'))
+    .pipe(gulp.dest('public/assets/js/'));
+
+    gulp.src(paths.css)
+    .pipe(autoprefixer('last 2 version'))
+    .pipe(rename('app.css'))
+    .pipe(gulp.dest('public/assets/css/'));
+
+    gulp.src(paths.images)
+    .pipe(cache(imagemin({optimizationLevel : 5})))
+    .pipe(gulp.dest('public/assets/images/'));
+    //.pipe(notify('test'));
 });
 
 gulp.task('compress', function() {
@@ -47,12 +68,14 @@ gulp.task('compress', function() {
     .pipe(jshint.reporter('default'))
     .pipe(uglify())
     .pipe(concat('app.min.js'))
-    .pipe(gulp.dest('public/js/'));
+    .pipe(rev())
+    .pipe(gulp.dest('public/assets/js/'));
 
     gulp.src(paths.css)
     .pipe(autoprefixer('last 2 version'))
     .pipe(rename('app.min.css'))
     .pipe(cssnano())
+    .pipe(rev())
     .pipe(gulp.dest('public/assets/css/'));
 
     gulp.src(paths.images)
@@ -73,5 +96,5 @@ gulp.task('compressVendor', function() {
 });
 
 gulp.task('clean', function() {
-    del(['public/*.*', 'public/**/*.*', '!public/**/app-*.*']);
+    return del(['public/asset/**/*.*', '!public/**/app-*.*']);
 });
